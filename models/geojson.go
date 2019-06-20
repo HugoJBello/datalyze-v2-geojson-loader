@@ -1,5 +1,11 @@
 package models
 
+import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
+)
+
 type Geometry struct {
 	Type        string    `json:"type"`
 	BoundingBox []float64 `json:"bbox,omitempty"`
@@ -18,4 +24,14 @@ type Geojson struct {
 	CRS      map[string]interface{} `json:"crs,omitempty"` // Coordinate Reference System Objects are not currently supported
 	Name     string                 `json:"name"`
 	Features []Feature              `json:"features"`
+}
+
+func GeojsonFromFile(jsonFile *os.File) (geometry Geojson) {
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	geometry = Geojson{}
+	json.Unmarshal(byteValue, &geometry)
+
+	return geometry
 }
