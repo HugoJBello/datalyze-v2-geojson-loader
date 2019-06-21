@@ -8,11 +8,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	_ "github.com/lib/pq" // here
 )
 
 func LoadPropertiesGeojson(jsonFile *os.File) (err error) {
+	tableName := getTableName(jsonFile)
+
 	db.Connect()
 	dbConnection := db.GetDb()
 
@@ -21,8 +25,6 @@ func LoadPropertiesGeojson(jsonFile *os.File) (err error) {
 	}
 	geometry := models.GeojsonFromFile(jsonFile)
 	properties := geometry.PropertyNames()
-
-	tableName := "example"
 
 	err = createDBwithProperties(dbConnection, properties, tableName)
 	if err != nil {
@@ -37,6 +39,14 @@ func LoadPropertiesGeojson(jsonFile *os.File) (err error) {
 	}
 	return nil
 
+}
+
+func getTableName(jsonFile *os.File) string {
+	dirName := filepath.Dir(jsonFile.Name())
+	tableName := strings.ReplaceAll(jsonFile.Name(), dirName, "")
+	tableName = strings.ReplaceAll(tableName, ".json", "")
+	tableName = strings.ReplaceAll(tableName, "/", "")
+	return tableName
 }
 
 func createDBwithProperties(dbConnection *sql.DB, properties []interface{}, tableName string) error {
