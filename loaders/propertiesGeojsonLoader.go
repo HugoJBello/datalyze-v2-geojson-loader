@@ -20,14 +20,17 @@ func LoadPropertiesGeojson(jsonFile *os.File) (err error) {
 		return errors.New("no file")
 	}
 	geometry := models.GeojsonFromFile(jsonFile)
+	properties := geometry.PropertyNames()
 
-	err = createDBwithProperties(dbConnection)
+	tableName := "example"
+
+	err = createDBwithProperties(dbConnection, properties, tableName)
 	if err != nil {
 		return err
 		fmt.Println(err)
 	}
 
-	err = insertGeojsonWithProperties(dbConnection, geometry)
+	err = insertGeojsonWithProperties(dbConnection, geometry, tableName)
 	if err != nil {
 		return err
 		fmt.Println(err)
@@ -36,29 +39,27 @@ func LoadPropertiesGeojson(jsonFile *os.File) (err error) {
 
 }
 
-func createDBwithProperties(dbConnection *sql.DB) error {
+func createDBwithProperties(dbConnection *sql.DB, properties []interface{}, tableName string) error {
 	fmt.Println("creating tables")
-	_, err := dbConnection.Exec(`
-	set client_encoding to 'utf8';
-		DROP TABLE waypoints;
-		CREATE EXTENSION IF NOT EXISTS postgis;
-		CREATE TABLE IF NOT EXISTS waypoints (
-			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL,
-			cusec TEXT NOT NULL,
-			percent_pob_esp FLOAT,
-			geom geometry(Multipolygon) NOT NULL
-		);
-	`)
+	sql := fmt.Sprintf(`set client_encoding to 'utf8';
+	DROP TABLE if exists %q;
+	CREATE EXTENSION IF NOT EXISTS postgis;
+	CREATE TABLE IF NOT EXISTS  %q (
+		id SERIAL PRIMARY KEY,
+		geom geometry(Multipolygon, 3857) NOT NULL
+	);`, tableName, tableName)
+	fmt.Println(sql)
+	_, err := dbConnection.Exec(sql)
+
 	return err
 }
 
 // readGeoJSON demonstrates reading data in GeoJSON format and inserting it
 // into a database in EWKB format.
-func insertGeojsonWithProperties(dbConnection *sql.DB, geometry models.Geojson) error {
+func insertGeojsonWithProperties(dbConnection *sql.DB, geometry models.Geojson, tableName string) error {
 
 	for _, feature := range geometry.Features {
-		err := insertFeatureWithProperties(dbConnection, feature)
+		err := insertFeatureWithProperties(dbConnection, feature, tableName)
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -68,19 +69,16 @@ func insertGeojsonWithProperties(dbConnection *sql.DB, geometry models.Geojson) 
 
 }
 
-func insertFeatureWithProperties(dbConnection *sql.DB, feature models.Feature) error {
-	percentPobEsp := feature.Properties["%_pob_esp"]
-	cusec := feature.Properties["CUSEC"]
+func insertFeatureWithProperties(dbConnection *sql.DB, feature models.Feature, tableName string) error {
 
 	b, err := json.Marshal(feature.Geometry)
 	if err != nil {
 		fmt.Println(err)
 	}
 	json := string(b)
+	sql := fmt.Sprintf(`INSERT INTO %q (geom) VALUES (ST_SetSRID(ST_GeomFromGeoJSON($1), 3857));`, tableName)
 
-	_, err = dbConnection.Exec(`
-	INSERT INTO waypoints(name, cusec, percent_pob_esp, geom) VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4));
-	`, "aa", cusec, percentPobEsp, json)
+	_, err = dbConnection.Exec(sql, json)
 	if err != nil {
 		fmt.Println(err)
 		return err

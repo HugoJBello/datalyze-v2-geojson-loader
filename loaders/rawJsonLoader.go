@@ -39,7 +39,7 @@ func createDBRawGeojson(dbConnection *sql.DB) error {
 	fmt.Println("creating tables")
 	_, err := dbConnection.Exec(`
 	set client_encoding to 'utf8';
-		DROP TABLE waypoints;
+		DROP TABLE if exists waypoints;
 		CREATE EXTENSION IF NOT EXISTS postgis;
 		CREATE TABLE IF NOT EXISTS waypoints (
 			id SERIAL PRIMARY KEY,
