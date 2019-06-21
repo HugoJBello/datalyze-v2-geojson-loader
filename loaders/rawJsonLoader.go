@@ -5,27 +5,34 @@ import (
 	"datalyze-v2-geojson-loader-postgis/db"
 	"datalyze-v2-geojson-loader-postgis/models"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
 	_ "github.com/lib/pq" // here
 )
 
-func LoadRawGeojson(jsonFile *os.File) {
+func LoadRawGeojson(jsonFile *os.File) (err error) {
 	db.Connect()
 	dbConnection := db.GetDb()
-	err := createDBRawGeojson(dbConnection)
+	err = createDBRawGeojson(dbConnection)
 	if err != nil {
 		fmt.Println(err)
+		return err
+	}
+
+	if jsonFile == nil {
+		return errors.New("no file")
 	}
 
 	geometry := models.GeojsonFromFile(jsonFile)
-	// fmt.Println(geometry)
+
 	err = insertRawGeojson(dbConnection, geometry)
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
-
+	return nil
 }
 
 func createDBRawGeojson(dbConnection *sql.DB) error {

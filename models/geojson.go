@@ -35,3 +35,14 @@ func GeojsonFromFile(jsonFile *os.File) (geometry Geojson) {
 
 	return geometry
 }
+
+func (geojson *Geojson) PropertyNames() []interface{} {
+	propertiesMap := geojson.Features[0].Properties
+
+	keys := make([]interface{}, len(propertiesMap))
+	for k := range propertiesMap {
+		keys = append(keys, k)
+	}
+	return keys
+
+}
