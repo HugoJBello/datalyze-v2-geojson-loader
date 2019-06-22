@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"reflect"
 )
 
 type Geometry struct {
@@ -36,13 +37,17 @@ func GeojsonFromFile(jsonFile *os.File) (geometry Geojson) {
 	return geometry
 }
 
-func (geojson *Geojson) PropertyNames() []interface{} {
+func (geojson *Geojson) PropertyNames() map[string]string {
 	propertiesMap := geojson.Features[0].Properties
 
-	keys := make([]interface{}, len(propertiesMap))
-	for k := range propertiesMap {
-		keys = append(keys, k)
+	var propertiesWithTypes map[string]string
+	propertiesWithTypes = make(map[string]string)
+	for key, value := range propertiesMap {
+		if key != "" && value != nil {
+			typeStr := reflect.TypeOf(value).String()
+			propertiesWithTypes[key] = typeStr
+		}
 	}
-	return keys
+	return propertiesWithTypes
 
 }

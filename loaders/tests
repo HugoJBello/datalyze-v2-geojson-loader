@@ -114,36 +114,34 @@ func insertFeatureWithProperties(dbConnection *sql.DB, feature models.Feature, t
 		fmt.Println(err)
 	}
 	json := string(b)
-	propertiesText, propertiesSlice := generateColumnsInsertionFromProperties(properties)
-	sql := fmt.Sprintf(`INSERT INTO %q (%q, geom) VALUES (%q ST_SetSRID(ST_GeomFromGeoJSON($1), 3857));`, tableName, propertiesText, generateValuesInsertionFromProperties(properties))
+
+	sql := fmt.Sprintf(`INSERT INTO %q (%q, geom) VALUES (%q ST_SetSRID(ST_GeomFromGeoJSON($1), 3857));`, tableName, generateColumnsInsertionFromProperties(properties), generateValuesInsertionFromProperties(properties))
 	sql = strings.ReplaceAll(sql, "\"", "")
 	sql = strings.ReplaceAll(sql, "%", "percent")
 	fmt.Println(sql)
 	var args []reflect.Value
-	args = generateArgs(sql, json, feature, propertiesSlice)
+	args = generateArgs(sql, json, feature)
 	fmt.Println(args)
 	fun := reflect.ValueOf(dbConnection.Exec)
 	result := fun.Call(args)
 
-	if result != nil && result[1].Interface() != nil {
+	if result != nil {
 		fmt.Println(result[1].Interface().(error))
 	}
 	return nil
 }
 
-func generateColumnsInsertionFromProperties(properties map[string]string) (string, []string) {
+func generateColumnsInsertionFromProperties(properties map[string]string) string {
 	columns := ""
-	var columnsSlice []string
 
 	for property := range properties {
-		columnsSlice = append(columnsSlice, property)
 		if columns != "" {
 			columns = columns + "," + property
 		} else {
 			columns = columns + " " + property
 		}
 	}
-	return columns, columnsSlice
+	return columns
 }
 
 func generateValuesInsertionFromProperties(properties map[string]string) string {
@@ -156,15 +154,15 @@ func generateValuesInsertionFromProperties(properties map[string]string) string 
 	return values
 }
 
-func generateArgs(sql string, json string, feature models.Feature, propertiesSlice []string) (args []reflect.Value) {
+func generateArgs(sql string, json string, feature models.Feature) (args []reflect.Value) {
 	args = append(args, reflect.ValueOf(sql))
 	args = append(args, reflect.ValueOf(json))
 
-	for _, value := range propertiesSlice {
-		if feature.Properties[value] == nil {
+	for _, value := range feature.Properties {
+		if value == nil {
 			args = append(args, reflect.ValueOf(""))
 		} else {
-			args = append(args, reflect.ValueOf(feature.Properties[value]))
+			args = append(args, reflect.ValueOf(value))
 		}
 	}
 	return args
