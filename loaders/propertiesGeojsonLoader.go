@@ -65,8 +65,6 @@ func createDBwithProperties(dbConnection *sql.DB, properties map[string]string, 
 	sql = strings.ReplaceAll(sql, "\"", "")
 	sql = strings.ReplaceAll(sql, "%", "percent")
 
-	fmt.Println(sql)
-
 	_, err := dbConnection.Exec(sql)
 
 	return err
@@ -118,10 +116,8 @@ func insertFeatureWithProperties(dbConnection *sql.DB, feature models.Feature, t
 	sql := fmt.Sprintf(`INSERT INTO %q (%q, geom) VALUES (%q ST_SetSRID(ST_GeomFromGeoJSON($1), 3857));`, tableName, propertiesText, generateValuesInsertionFromProperties(properties))
 	sql = strings.ReplaceAll(sql, "\"", "")
 	sql = strings.ReplaceAll(sql, "%", "percent")
-	fmt.Println(sql)
 	var args []reflect.Value
 	args = generateArgs(sql, json, feature, propertiesSlice)
-	fmt.Println(args)
 	fun := reflect.ValueOf(dbConnection.Exec)
 	result := fun.Call(args)
 
