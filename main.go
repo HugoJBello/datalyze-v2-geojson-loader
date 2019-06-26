@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-//go run . -load-geojson -path data/raw_data/polygon_cusecs_data.tar.gz
+//go run . -load-geojson -path data/raw_data/polygon_cusecs_data.tar.xz
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
 var loadGeojson = flag.Bool("load-geojson", false, "load geojson in postgres")
