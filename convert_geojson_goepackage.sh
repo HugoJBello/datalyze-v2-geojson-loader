@@ -1,0 +1,1 @@
+docker run -v $(pwd):/data geodata/gdal ogr2ogr -f "GPKG" "/data/geopackage.gpkg" "data/raw_data/example2.json"

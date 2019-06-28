@@ -15,4 +15,6 @@
 .vscode/*
 .vscode
 polygon_cusecs.json
-*_data.json
+*.json
+*.gpkg
+*.geojson

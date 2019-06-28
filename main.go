@@ -2,6 +2,7 @@ package main
 
 import (
 	"datalyze-v2-geojson-loader-postgis/loaders"
+	"datalyze-v2-geojson-loader-postgis/utils"
 	"flag"
 	"fmt"
 	"os"
@@ -13,6 +14,7 @@ import (
 //go run . -load-geojson -path data/raw_data/polygon_cusecs_data.tar.xz
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
+var generateIndex = flag.Bool("generate-index", false, "load index into file")
 var loadGeojson = flag.Bool("load-geojson", false, "load geojson in postgres")
 
 func main() {
@@ -24,6 +26,8 @@ func main() {
 
 	if *loadGeojson {
 		loaders.LoadRawGeojson(jsonFile)
+	} else if *generateIndex {
+		utils.GenerateCusecIndex()
 	}
 }
 
