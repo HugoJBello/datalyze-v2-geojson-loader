@@ -17,8 +17,7 @@ func TestCsvToGeojsonGenerator(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	geojson, err := GenerateGeojsonFromCsv(testFile)
-	assert.NotEqual(t, nil, geojson)
+	err = GenerateGeojsonFromCsv(testFile)
 	assert.Equal(t, nil, err, "OK response is expected")
 
 }

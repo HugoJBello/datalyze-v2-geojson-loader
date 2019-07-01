@@ -9,11 +9,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
-func GenerateGeojsonFromCsv(file *os.File) (geojsonResult models.Geojson, err error) {
+func GenerateGeojsonFromCsv(file *os.File) (err error) {
 	cusecIndex := getCusecIndex()
-	geojsonResult = models.Geojson{}
+	geojsonResult := models.Geojson{}
 
 	reader := csv.NewReader(bufio.NewReader(file))
 	reader.Comma = ';'
@@ -38,7 +39,11 @@ func GenerateGeojsonFromCsv(file *os.File) (geojsonResult models.Geojson, err er
 			geojsonResult.Features = append(geojsonResult.Features, feature)
 		}
 	}
-	return geojsonResult, nil
+
+	filenameOut := strings.ReplaceAll(file.Name(), ".csv", "geojson.json")
+
+	saveToJsonFile(geojsonResult, filenameOut)
+	return nil
 }
 
 func obtainJsonFromLine(line []string, header []string) map[string]interface{} {
@@ -60,4 +65,20 @@ func getCusecIndex() map[string]models.Feature {
 	cusecIndex := make(map[string]models.Feature)
 	json.Unmarshal(byteValue, &cusecIndex)
 	return cusecIndex
+}
+
+func saveToJsonFile(data interface{}, filename string) {
+	jsonString, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	f, _ := os.Create("./data/" + filename)
+	_, err = f.WriteString(string(jsonString))
+	if err != nil {
+		fmt.Println(err)
+		f.Close()
+		return
+	}
+
 }
