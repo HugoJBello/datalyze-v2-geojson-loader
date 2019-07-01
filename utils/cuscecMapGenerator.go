@@ -11,7 +11,7 @@ import (
 )
 
 func GenerateCusecIndex() {
-	jsonFile := uncompressAndOpen("./data/raw_data/polygon_cusecs_geojson.tar.xz")
+	jsonFile := uncompressAndOpen("./data/raw_data/polygon_cusecs_geojson_CRS84.tar.xz")
 	//jsonFile := uncompressAndOpen("../data/raw_data/example2_geojson.tar.xz")
 
 	geojson := models.GeojsonFromFile(jsonFile)
@@ -51,7 +51,10 @@ func uncompressAndOpen(path string) *os.File {
 			panic(err)
 		}
 		jsonPath := strings.ReplaceAll(path, ".tar.xz", ".json")
-		uncompressedJsonFile, _ := os.Open(jsonPath)
+		uncompressedJsonFile, err := os.Open(jsonPath)
+		if err != nil {
+			fmt.Println(err)
+		}
 		return uncompressedJsonFile
 	}
 	jsonFile, _ := os.Open(path)

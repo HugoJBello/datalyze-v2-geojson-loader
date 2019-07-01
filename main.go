@@ -15,19 +15,25 @@ import (
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
 var generateIndex = flag.Bool("generate-index", false, "load index into file")
+var generateFromCsv = flag.Bool("generate-from-csv", false, "generate geojson from csv")
 var loadGeojson = flag.Bool("load-geojson", false, "load geojson in postgres")
 
 func main() {
 	flag.Parse()
 
 	path := *jsonPath
+	var jsonFile *os.File
 
-	jsonFile := uncompressAndOpen(path)
+	if path != "" {
+		jsonFile = uncompressAndOpen(path)
+	}
 
 	if *loadGeojson {
 		loaders.LoadRawGeojson(jsonFile)
 	} else if *generateIndex {
 		utils.GenerateCusecIndex()
+	} else if *generateFromCsv {
+
 	}
 }
 
