@@ -1,6 +1,6 @@
 
-DIR = "data/raw_data"
-cd data/raw_data
+DIR="../data/raw_data"
+cd ../data/raw_data
 for FILE in $(find -name '*.json') # cycles through all files in directory (case-sensitive!)
 do
     echo "converting file: $FILE..."

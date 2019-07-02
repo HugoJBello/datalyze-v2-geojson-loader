@@ -19,7 +19,9 @@ var numberNameFileds []string = []string{"RANKING", "MEDIANA", "PERCENT", "perce
 func GenerateGeojsonFromCsv(file *os.File, outputPath string) (err error) {
 	fmt.Println("Reading previously obtained cusec index")
 	cusecIndex := getCusecIndex()
-	geojsonResult := models.Geojson{}
+	filename := strings.ReplaceAll(file.Name(), filepath.Dir(file.Name()), "")
+
+	geojsonResult := initializeGeojsonWithCs(filename)
 
 	fmt.Println("Reading input file")
 	reader := csv.NewReader(bufio.NewReader(file))
@@ -46,13 +48,24 @@ func GenerateGeojsonFromCsv(file *os.File, outputPath string) (err error) {
 			geojsonResult.Features = append(geojsonResult.Features, feature)
 		}
 	}
-	filename := strings.ReplaceAll(file.Name(), filepath.Dir(file.Name()), "")
 	filenameOut := strings.ReplaceAll(outputPath+filename, ".csv", "_geojson.json")
 	filenameOut = strings.ReplaceAll(filenameOut, "//", "/")
 
 	fmt.Println("saving file " + filenameOut)
 	saveToJsonFile(geojsonResult, filenameOut)
 	return nil
+}
+
+func initializeGeojsonWithCs(filename string) models.Geojson {
+	geojsonResult := models.Geojson{}
+	geojsonResult.Name = strings.ReplaceAll(filename, "/", "")
+	geojsonResult.Type = "FeatureCollection"
+	geojsonResult.CRS = make(map[string]interface{})
+	geojsonResult.CRS["type"] = "name"
+	properties := make(map[string]interface{})
+	properties["name"] = "urn:ogc:def:crs:OGC:1.3:CRS84"
+	geojsonResult.CRS["properties"] = properties
+	return geojsonResult
 }
 
 func obtainJsonFromLine(line []string, header []string) map[string]interface{} {
@@ -80,7 +93,7 @@ func isColumnNumber(column string) bool {
 func getCusecIndex() map[string]models.Feature {
 	cusecIndexFile, err := os.Open("../data/cusec_index.json")
 	if err != nil {
-		fmt.Println(err)
+		cusecIndexFile, _ = os.Open("./data/cusec_index.json")
 	}
 	byteValue, _ := ioutil.ReadAll(cusecIndexFile)
 

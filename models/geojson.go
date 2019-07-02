@@ -8,9 +8,9 @@ import (
 )
 
 type Geometry struct {
-	Type        string    `json:"type"`
-	BoundingBox []float64 `json:"bbox,omitempty"`
-	Coordinates [][][][]float64
+	Type        string                 `json:"type"`
+	BoundingBox []float64              `json:"bbox,omitempty"`
+	Coordinates [][][][]float64        `json:"coordinates,omitempty"`
 	CRS         map[string]interface{} `json:"crs,omitempty"` // Coordinate Reference System Objects are not currently supported
 }
 
