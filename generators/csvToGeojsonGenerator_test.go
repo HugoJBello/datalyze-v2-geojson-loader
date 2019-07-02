@@ -10,14 +10,13 @@ import (
 
 func TestCsvToGeojsonGenerator(t *testing.T) {
 	testFile, err := os.Open("../data/csv_data/example.csv")
-	fmt.Println(testFile)
 
 	if err != nil {
 		fmt.Println("error ")
 		fmt.Println(err)
 	}
 
-	err = GenerateGeojsonFromCsv(testFile)
+	err = GenerateGeojsonFromCsv(testFile, "../data/processed_data/")
 	assert.Equal(t, nil, err, "OK response is expected")
 
 }

@@ -9,13 +9,19 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
 
-func GenerateGeojsonFromCsv(file *os.File) (err error) {
+var numberNameFileds []string = []string{"RANKING", "MEDIANA", "PERCENT", "percent", "PSOE"}
+
+func GenerateGeojsonFromCsv(file *os.File, outputPath string) (err error) {
+	fmt.Println("Reading previously obtained cusec index")
 	cusecIndex := getCusecIndex()
 	geojsonResult := models.Geojson{}
 
+	fmt.Println("Reading input file")
 	reader := csv.NewReader(bufio.NewReader(file))
 	reader.Comma = ';'
 	var header []string
@@ -27,6 +33,7 @@ func GenerateGeojsonFromCsv(file *os.File) (err error) {
 			break
 		} else if err != nil {
 			fmt.Println(err)
+			return err
 		}
 
 		if count == 1 {
@@ -39,9 +46,11 @@ func GenerateGeojsonFromCsv(file *os.File) (err error) {
 			geojsonResult.Features = append(geojsonResult.Features, feature)
 		}
 	}
+	filename := strings.ReplaceAll(file.Name(), filepath.Dir(file.Name()), "")
+	filenameOut := strings.ReplaceAll(outputPath+filename, ".csv", "_geojson.json")
+	filenameOut = strings.ReplaceAll(filenameOut, "//", "/")
 
-	filenameOut := strings.ReplaceAll(file.Name(), ".csv", "geojson.json")
-
+	fmt.Println("saving file " + filenameOut)
 	saveToJsonFile(geojsonResult, filenameOut)
 	return nil
 }
@@ -49,10 +58,23 @@ func GenerateGeojsonFromCsv(file *os.File) (err error) {
 func obtainJsonFromLine(line []string, header []string) map[string]interface{} {
 	jsonMap := make(map[string]interface{})
 	for index, column := range header {
-		jsonMap[column] = line[index]
+		if !isColumnNumber(column) {
+			jsonMap[column] = line[index]
+		} else {
+			jsonMap[column], _ = strconv.ParseFloat(line[index], 32)
+		}
 	}
 
 	return jsonMap
+}
+
+func isColumnNumber(column string) bool {
+	for _, name := range numberNameFileds {
+		if strings.Contains(column, name) {
+			return true
+		}
+	}
+	return false
 }
 
 func getCusecIndex() map[string]models.Feature {
@@ -73,7 +95,13 @@ func saveToJsonFile(data interface{}, filename string) {
 		fmt.Println(err)
 	}
 
-	f, _ := os.Create("./data/" + filename)
+	f, err := os.Create(filename)
+
+	if err != nil {
+		fmt.Println(err)
+		f.Close()
+		return
+	}
 	_, err = f.WriteString(string(jsonString))
 	if err != nil {
 		fmt.Println(err)

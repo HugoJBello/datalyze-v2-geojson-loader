@@ -1,6 +1,7 @@
 package main
 
 import (
+	"datalyze-v2-geojson-loader-postgis/generators"
 	"datalyze-v2-geojson-loader-postgis/loaders"
 	"datalyze-v2-geojson-loader-postgis/utils"
 	"flag"
@@ -14,6 +15,8 @@ import (
 //go run . -load-geojson -path data/raw_data/polygon_cusecs_data.tar.xz
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
+var output = flag.String("o", "data/processed_data", "output dir")
+
 var generateIndex = flag.Bool("generate-index", false, "load index into file")
 var generateFromCsv = flag.Bool("generate-from-csv", false, "generate geojson from csv")
 var loadGeojson = flag.Bool("load-geojson", false, "load geojson in postgres")
@@ -22,18 +25,20 @@ func main() {
 	flag.Parse()
 
 	path := *jsonPath
-	var jsonFile *os.File
+	var inputFile *os.File
 
 	if path != "" {
-		jsonFile = uncompressAndOpen(path)
+		inputFile = uncompressAndOpen(path)
 	}
 
+	outputPath := *output
+
 	if *loadGeojson {
-		loaders.LoadRawGeojson(jsonFile)
+		loaders.LoadRawGeojson(inputFile)
 	} else if *generateIndex {
 		utils.GenerateCusecIndex()
 	} else if *generateFromCsv {
-
+		generators.GenerateGeojsonFromCsv(inputFile, outputPath)
 	}
 }
 
@@ -49,9 +54,9 @@ func uncompressAndOpen(path string) *os.File {
 			panic(err)
 		}
 		jsonPath := strings.ReplaceAll(path, ".tar.xz", ".json")
-		uncompressedJsonFile, _ := os.Open(jsonPath)
-		return uncompressedJsonFile
+		uncompressedinputFile, _ := os.Open(jsonPath)
+		return uncompressedinputFile
 	}
-	jsonFile, _ := os.Open(path)
-	return jsonFile
+	inputFile, _ := os.Open(path)
+	return inputFile
 }
