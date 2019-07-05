@@ -40,6 +40,7 @@ func main() {
 	if *loadGeojson {
 		loaders.LoadRawGeojson(inputFile)
 	} else if *generateIndex {
+		utils.GenerateMunicipioIndex()
 		utils.GenerateCusecIndex()
 	} else if *generateFromCsv {
 		generators.GenerateGeojsonFromCsv(inputFile, outputPath)
