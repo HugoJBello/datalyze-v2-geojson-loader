@@ -16,9 +16,9 @@ import (
 
 var numberNameFileds []string = []string{"RANKING", "MEDIANA", "PERCENT", "percent", "PSOE", "kpi", "KPI"}
 
-func GenerateGeojsonFromCsv(file *os.File, outputPath string) (err error) {
+func GenerateGeojsonFromCsv(file *os.File, outputPath string, mapType string) (err error) {
 	fmt.Println("Reading previously obtained cusec index")
-	cusecIndex := getCusecIndex()
+	cusecIndex := getIndex(mapType)
 	filename := strings.ReplaceAll(file.Name(), filepath.Dir(file.Name()), "")
 
 	geojsonResult := initializeGeojsonWithCs(filename)
@@ -43,9 +43,15 @@ func GenerateGeojsonFromCsv(file *os.File, outputPath string) (err error) {
 			count = count + 1
 		} else {
 			properties := obtainJsonFromLine(line, header)
-			feature := cusecIndex[fmt.Sprintf("%v", properties["CUSEC"])]
-			feature.Properties = properties
-			geojsonResult.Features = append(geojsonResult.Features, feature)
+			if mapType == "cusec" {
+				feature := cusecIndex[fmt.Sprintf("%v", properties["CUSEC"])]
+				feature.Properties = properties
+				geojsonResult.Features = append(geojsonResult.Features, feature)
+			} else {
+				feature := cusecIndex[fmt.Sprintf("%v", properties["KEY_MUN"])]
+				feature.Properties = properties
+				geojsonResult.Features = append(geojsonResult.Features, feature)
+			}
 		}
 	}
 	filenameOut := strings.ReplaceAll(outputPath+filename, ".csv", "_geojson.json")
@@ -90,11 +96,21 @@ func isColumnNumber(column string) bool {
 	return false
 }
 
-func getCusecIndex() map[string]models.Feature {
-	cusecIndexFile, err := os.Open("../data/cusec_index.json")
-	if err != nil {
-		cusecIndexFile, _ = os.Open("./data/cusec_index.json")
+func getIndex(mapType string) map[string]models.Feature {
+	var cusecIndexFile *os.File
+	var err error
+	if mapType == "cusec" {
+		cusecIndexFile, err = os.Open("../data/cusec_index.json")
+		if err != nil {
+			cusecIndexFile, _ = os.Open("./data/cusec_index.json")
+		}
+	} else {
+		cusecIndexFile, err = os.Open("../data/municipio_index.json")
+		if err != nil {
+			cusecIndexFile, _ = os.Open("./data/municipio_index.json")
+		}
 	}
+
 	byteValue, _ := ioutil.ReadAll(cusecIndexFile)
 
 	cusecIndex := make(map[string]models.Feature)
