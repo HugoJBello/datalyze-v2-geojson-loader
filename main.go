@@ -15,7 +15,7 @@ import (
 //go run . -load-geojson -path data/raw_data/polygon_cusecs_data.tar.xz
 //go run . -generate-from-csv -path data/csv_data/example.csv -output data/processed_data
 // go run . -generate-from-csv -path data/csv_data/example.csv -output data/processed_data -output-mapbox
-// go run . -generate-from-csv -path data/csv_data/kpi/kpis_gen_nivel_municipio_generado_limpio.csv -output data/processed_data -output-mapbox  -map-type municipio
+// go run . -generate-from-csv -path data/csv_data/kpi/kpis_municipio_combinados.csv -output data/processed_data -output-mapbox  -map-type municipio
 // go run . -generate-index
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
