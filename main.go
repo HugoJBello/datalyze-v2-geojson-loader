@@ -16,6 +16,8 @@ import (
 //go run . -generate-from-csv -path data/csv_data/example.csv -output data/processed_data
 // go run . -generate-from-csv -path data/csv_data/example.csv -output data/processed_data -output-mapbox
 // go run . -generate-from-csv -path data/csv_data/kpi/kpis_municipio_combinados.csv -output data/processed_data -output-mapbox  -map-type municipio
+// go run . -generate-from-csv -path data/csv_data/resultados_elecciones_28a.csv -output data/processed_data -output-mapbox  -map-type cusec
+
 // go run . -generate-index
 
 var jsonPath = flag.String("path", "data/example.json", "json path file")
@@ -29,7 +31,6 @@ var loadGeojson = flag.Bool("load-geojson", false, "load geojson in postgres")
 
 func main() {
 	flag.Parse()
-
 	path := *jsonPath
 	var inputFile *os.File
 
@@ -40,11 +41,13 @@ func main() {
 	outputPath := *output
 
 	if *loadGeojson {
+		fmt.Println("Loading raw geojson. Remember to create the index the first time you run this program in your machine by running \n go run . -generate-index\n")
 		loaders.LoadRawGeojson(inputFile)
 	} else if *generateIndex {
 		utils.GenerateMunicipioIndex()
 		utils.GenerateCusecIndex()
 	} else if *generateFromCsv {
+		fmt.Println("Generating geojson from csv file. Remember to create the index the first time you run this program in your machine by running \n go run . -generate-index\n")
 		generators.GenerateGeojsonFromCsv(inputFile, outputPath, *mapType)
 		if *asMapbox {
 			convetToMapbox(path, outputPath)

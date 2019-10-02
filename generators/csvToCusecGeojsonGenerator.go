@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var numberNameFileds []string = []string{"RANKING", "MEDIANA", "PERCENT", "percent", "PSOE", "kpi", "KPI"}
+var numberNameFileds []string = []string{"RANKING", "MEDIANA", "PERCENT", "percent", "PSOE", "kpi", "KPI", "%"}
 
 func GenerateGeojsonFromCsv(file *os.File, outputPath string, mapType string) (err error) {
 	fmt.Println("Reading previously obtained cusec index")
