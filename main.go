@@ -17,6 +17,8 @@ import (
 // go run . -generate-from-csv -path data/csv_data/example.csv -output data/processed_data -output-mapbox
 // go run . -generate-from-csv -path data/csv_data/kpi/kpis_municipio_combinados.csv -output data/processed_data -output-mapbox  -map-type municipio
 // go run . -generate-from-csv -path data/csv_data/resultados_elecciones_28a.csv -output data/processed_data -output-mapbox  -map-type cusec
+// go run . -generate-from-csv -path data/csv_data/resultados_elecciones_26j.csv -output data/processed_data -output-mapbox  -map-type cusec
+// go run . -generate-from-csv -path data/csv_data/resultados_elecciones_26j-28a.csv -output data/processed_data -output-mapbox  -map-type cusec
 
 // go run . -generate-index
 
